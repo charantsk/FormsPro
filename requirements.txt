@@ -59,3 +59,5 @@ Werkzeug==3.1.3
 win_inet_pton @ file:///D:/bld/win_inet_pton_1733130564612/work
 wrapt @ file:///D:/bld/wrapt_1736869488076/work
 zstandard==0.23.0
+gunicorn==22.0.0
+Werkzeug==2.2.3
