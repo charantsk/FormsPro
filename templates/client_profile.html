@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client_profile.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    {% include 'client_navbar.html' %}
+    
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <img 
+                    class="profile-picture" 
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23E2E8F0'/%3E%3Cpath d='M60 65c16.5 0 30-13.5 30-30S76.5 5 60 5 30 18.5 30 35s13.5 30 30 30zm0 10c-20 0-60 10-60 30v10h120v-10c0-20-40-30-60-30z' fill='%2394A3B8'/%3E%3C/svg%3E"
+                    alt="{{ client.username }}'s profile picture"
+                >
+                <div class="profile-header-content">
+                    <h2>{{ client.username }}</h2>
+                    <p>{{ client.class_group.value.replace('_', ' ').replace('year', 'Year ').title() }}</p>
+
+                </div>
+            </div>
+            <div class="profile-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Email</strong>
+                        <span>{{ client.email or 'No email provided' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="submissions-section">
+            <h3>Submissions Report Card</h3>
+            {% if submissions %}
+            <table class="submissions-table">
+                <thead>
+                    <tr>
+                        <th>Form Title</th>
+                        <th>Submitted At</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.form_title }}</td>
+                        <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ submission.score }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No submissions found.</p>
+            {% endif %}
+        </div>
+
+        <div class="chart-container">
+            <h3>Progress Chart</h3>
+            <canvas id="progressChart"></canvas>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                let labels = [];
+                let scores = [];
+                {% for submission in submissions %}
+                    labels.push("{{ submission.form_title }}");
+                    scores.push({{ submission.score }});
+                {% endfor %}
+        
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Test Scores',
+                            data: scores,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: { display: false }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: 100
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            });
+        </script>
+        
+
+        <style>
+            .submissions-section, .chart-container {
+                margin-top: 2rem;
+                padding: 1rem;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            .submissions-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1rem;
+            }
+            .submissions-table th, .submissions-table td {
+                border: 1px solid var(--border-color);
+                padding: 0.75rem;
+                text-align: left;
+            }
+            .submissions-table th {
+                background-color: var(--primary-color);
+                color: white;
+            }
+            .chart-container {
+    width: 100%;
+    max-width: 100%;
+    margin: auto;
+    padding: 1rem;
+}
+
+canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+        </style>
+    
+    <footer>
+        <p>University &copy; 2025. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

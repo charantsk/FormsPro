@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}"> <!-- Link to local client_css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}"> <!-- Link to local client_css -->
+
+</head>
+
+<body>
+
+    {% include 'client_navbar.html' %}
+  
+    <div class="container">
+        <!-- Assigned Tests Card -->
+        <div class="card">
+            <h1></h1>
+            <h2>Assigned Tests & Surveys</h2>
+            <table id="forms-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Form rows will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Notifications Card -->
+        <div class="card" id="notifications-card">
+            <h2>Notifications</h2>
+            <div id="notifications-list">
+                <!-- Notifications will be dynamically populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Replace the existing script section with this: -->
+<script>
+    // Function to fetch forms and notifications from the API
+    async function fetchForms() {
+        try {
+            const response = await fetch('/api/forms');
+            if (!response.ok) {
+                throw new Error('Failed to fetch forms');
+            }
+            const data = await response.json();
+            renderForms(data.forms);
+            renderNotifications(data.notifications);
+        } catch (error) {
+            console.error('Error fetching forms:', error);
+            // You might want to show an error message to the user
+            document.querySelector("#forms-table tbody").innerHTML = `
+                <tr>
+                    <td colspan="3">Error loading forms. Please try again later.</td>
+                </tr>
+            `;
+        }
+    }
+
+    // Function to render the forms in the table
+    function renderForms(forms) {
+        const tableBody = document.querySelector("#forms-table tbody");
+        tableBody.innerHTML = ''; // Clear existing rows
+
+        if (forms.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3">No forms available at the moment.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        forms.forEach(form => {
+            const row = document.createElement('tr');
+            
+            // Determine the action button based on submission status
+            let actionButton;
+            if (form.already_submitted) {
+                actionButton = `<button disabled class="submitted-button">Submitted</button>`;
+            } else {
+                actionButton = `<a href="/client/submit_form?form_id=${form.id}" class="form-link">View</a>`;
+            }
+
+            row.innerHTML = `
+                <td>${form.title}</td>
+                <td>${form.description}</td>
+                <td>${actionButton}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Function to render notifications
+    function renderNotifications(notifications) {
+        const notificationsList = document.querySelector("#notifications-list");
+        notificationsList.innerHTML = ''; // Clear existing notifications
+
+        if (notifications.length === 0) {
+            notificationsList.innerHTML = `
+                <p>No new notifications.</p>
+            `;
+            return;
+        }
+
+        notifications.forEach(notification => {
+            const notificationElement = document.createElement('div');
+            notificationElement.classList.add('notification');
+            notificationElement.innerHTML = `
+                <h3>${notification.title}</h3>
+                <p>${notification.description}</p>
+            `;
+            notificationsList.appendChild(notificationElement);
+        });
+    }
+
+    // Add loading state
+    function showLoading() {
+        const tableBody = document.querySelector("#forms-table tbody");
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="3">Loading forms...</td>
+            </tr>
+        `;
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        showLoading();
+        fetchForms();
+    });
+</script>
+
+</body>
+
+</html>

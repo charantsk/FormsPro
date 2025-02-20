@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View/Edit Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_form.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}"> 
+    <script src="{{ url_for('static', filename='js/question_type.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/toggleUpload.js') }}"></script>
+
+    
+</head>
+<body>
+    {% include 'admin_navbar.html' %}
+
+    <div class="container">
+        <div class="form-group">
+            <button class="button button-primary" onclick="saveForm()">
+                <i class="fas fa-save" style="margin-right: 8px;"></i> Save
+            </button>
+        </div>
+        
+        <div class="card">
+            <h1>Edit Form</h1>
+
+            <div class="form-group">
+                <label for="form-type">Form Type</label>
+                <select id="form-type">
+                  <option value="NOTIFICATION">Notification</option>
+                  <option value="QUESTION_BANK">Question Bank</option>
+                  <option value="SURVEY">Survey</option>
+                </select>
+              </div>
+            
+            <div class="form-group">
+                <label for="form-title">Form Title</label>
+                <input type="text" id="form-title" placeholder="Enter a title for your form">
+            </div>
+            
+           
+
+            <div class="form-group">
+                <label for="form-description">Form Description</label>
+                <textarea id="form-description" placeholder="Describe your form"></textarea>
+            </div>
+
+            <!-- Move the timer section here -->
+      <div class="form-group" id="timer-section" style="display: none;">
+        <label for="form-timer">Time Limit (minutes)</label>
+        <input 
+          type="number" 
+          id="form-timer" 
+          min="1" 
+          max="180" 
+          value="30" 
+          placeholder="Enter time limit in minutes"
+        >
+        <small style="color: var(--text-secondary);">Set a time limit for this question bank (1-180 minutes)</small>
+      </div>
+
+            <div class="form-group" id="notification-recipients" style="display: none;">
+                <label for="notification-recipients-select">Recipients</label>
+                <select id="notification-recipients-select">
+                    <option value="admin">Staff</option>
+                    <option value="clients">Students</option>
+                    <option value="both">Both</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="push-notification-container" style="display: none;">
+                <button class="button button-primary" onclick="enablePushNotification()">Push Notifications Via Email</button>
+            </div>
+            
+            
+
+        </div>
+
+        <div class="card questionscard">
+            <div class="form-group">
+                <button class="button button-primary" onclick="openQuestionModal()">Add Question / Field</button>
+            </div>
+
+            <div class="questions-list" id="questions-container">
+                <!-- Questions will be rendered here -->
+            </div>
+        </div>
+
+        
+        <!-- Submissions Section -->
+        <div class="card submissionscard">
+            <h2 style="margin-bottom: 1.5rem;">Submissions</h2>
+            <div id="submissions-container">
+                <!-- Submissions will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+   <!-- Question Modal -->
+<div class="modal" id="question-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Question / Field</h2>
+      </div>
+  
+      <div class="form-group">
+        <label for="question-text">Question Text</label>
+        <input type="text" id="question-text" placeholder="Enter your question">
+      </div>
+  
+      <div class="form-group">
+        <label>Question Type</label>
+        <div id="question-type-container" class="question-type-options">
+          <button class="question-type-btn" data-type="SINGLE_WORD"><i class="fas fa-font"></i> Single Word</button>
+          <button class="question-type-btn" data-type="MULTI_WORD"><i class="fas fa-align-left"></i> Descriptive</button>
+          <button class="question-type-btn" data-type="TRUE_FALSE"><i class="fas fa-check-circle"></i> True/False</button>
+          <button class="question-type-btn" data-type="ATTACHMENT"><i class="fas fa-paperclip"></i> Attachment</button>
+          <button class="question-type-btn" data-type="LINK"><i class="fas fa-link"></i> Link</button>
+          <button class="question-type-btn" data-type="NUMBER"><i class="fas fa-hashtag"></i> Number</button>
+          <button class="question-type-btn" data-type="DATE"><i class="fas fa-calendar-alt"></i> Date</button>
+          <button class="question-type-btn" data-type="MULTIPLE_CHOICE"><i class="fas fa-list"></i> Multiple Choice</button>
+          <!-- <button class="question-type-btn" data-type="CHECKBOX"><i class="fas fa-check-square"></i> Checkbox</button> -->
+        </div>
+      </div>
+      
+      <!-- Hidden Input to Store Selected Type -->
+      <input type="hidden" id="question-type" value="SINGLE_WORD">
+      
+
+<div id="choices-section" style="display: none;margin-bottom: 1.5rem;">
+  <label for="choices">Choices</label>
+  <div id="choices-container">
+    <div class="choice">
+      <input type="text" class="choice-input" placeholder="Enter choice">
+    </div>
+  </div>
+  <button type="button" id="add-choice-btn" onclick="addChoice()">Add Choice</button>
+</div>
+  
+      <div class="form-group">
+        <label for="correct-answer">Expected Answer</label>
+        <input type="text" id="correct-answer" placeholder="Enter the correct answer">
+      </div>
+  
+      <div class="form-group">
+        <label for="points">Points</label>
+        <input type="number" id="points" value="1" min="1">
+      </div>
+  
+      <!-- Toggle for adding image -->
+      <div class="form-group">
+        <label for="add-image">Show Image?</label>
+        <input type="checkbox" id="add-image" onclick="toggleImageUpload()">
+      </div>
+  
+      <!-- Image upload section, initially hidden -->
+      <div class="form-group" id="image-upload-section" style="display: none;">
+        <label for="image-upload">Upload Image</label>
+        <input type="file" id="image-upload" accept="image/*">
+      </div>
+  
+      <div class="modal-footer">
+        <button class="button button-primary" onclick="addQuestion()">Add Question</button>
+        <button class="button" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+
+  
+  <!-- <script src="{{ url_for('static', filename='js/questionManager2.js') }}"></script> -->
+
+
+  <script src="{{ url_for('static', filename='js/view_form.js') }}"></script>
+
+
+<script src="{{ url_for('static', filename='js/formtype_options.js') }}"></script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const questionTypeButtons = document.querySelectorAll(".question-type-btn");
+  
+    questionTypeButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        // Remove active class from all buttons
+        questionTypeButtons.forEach(btn => btn.classList.remove("active"));
+        
+        // Add active class to the selected button
+        this.classList.add("active");
+        
+        // Set selected type to hidden input
+        document.getElementById("question-type").value = this.dataset.type;
+      });
+    });
+  });
+  
+</script>
+
+</body>
+</html>

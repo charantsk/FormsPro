@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+
+    <style>
+        :root {
+            --primary-color: #673AB7;
+            --primary-dark: #2980b9;
+            --text-color: #2c3e50;
+            --error-color: #e74c3c;
+            --background-color: #673AB7;
+            --border-color: #dcdde1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: fit-content;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .error {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            input, select, button {
+                padding: 0.7rem;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border: 0px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+        .role-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    {% include 'admin_navbar.html' %}
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%;">
+        <div class="container">
+            <h1>Create Profile</h1>
+            <form id="createUserForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select a role</option>
+                    </select>
+                </div>
+                <div class="form-group" id="class_group_container" style="display: none;">
+                    <label for="class_group">Class Group</label>
+                    <select id="class_group" name="class_group">
+                        <option value="">Select a class group</option>
+                    </select>
+                </div>
+                <button type="submit">Create User</button>
+            </form>
+            <div class="error" id="errorMessage"></div>
+        </div>
+        
+        <div class="container" id="userListContainer">
+            <h2>Manage Profiles</h2>
+
+            <div>
+                <label for="roleFilter">Filter by Role:</label>
+                <select id="roleFilter">
+                    <option value="">All</option>
+                    <option value="CLIENT">Client</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+            
+            <table id="userTable" border="1">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Class Group</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Load enums when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/enums');
+                const enums = await response.json();
+                
+                // Populate role select
+                const roleSelect = document.getElementById('role');
+                roleSelect.innerHTML = '<option value="">Select a role</option>';
+                enums.user_roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role;
+                    option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                    roleSelect.appendChild(option);
+                });
+
+                // Populate class group select
+                const classGroupSelect = document.getElementById('class_group');
+                classGroupSelect.innerHTML = '<option value="">Select a class group</option>';
+                enums.class_groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group;
+                    option.textContent = group.replace(/_/g, ' ').toUpperCase();
+                    classGroupSelect.appendChild(option);
+                });
+
+                // Show/hide class group based on role
+                document.getElementById('role').addEventListener('change', (e) => {
+                    const role = e.target.value;
+                    const classGroupContainer = document.getElementById('class_group_container');
+                    
+                    if (role === 'client' || role === 'admin') {
+                        classGroupContainer.style.display = 'block';
+                        document.getElementById('class_group').required = true;
+                    } else {
+                        classGroupContainer.style.display = 'none';
+                        document.getElementById('class_group').required = false;
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error fetching enums:', error);
+            }
+        });
+
+        // Form submission
+        document.getElementById('createUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const class_group = document.getElementById('class_group').value;
+            
+            const data = { 
+                username, 
+                password, 
+                role
+            };
+            
+            if (email.trim()) data.email = email;
+            if (role === 'client' && class_group) data.class_group = class_group;
+
+            fetch('/api/users/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadUsers();
+                document.getElementById('createUserForm').reset();
+                document.getElementById('errorMessage').textContent = '';
+            })
+            .catch(() => {
+                document.getElementById('errorMessage').textContent = 'Something went wrong. Please try again.';
+            });
+        });
+
+        // Role filter event listener
+        document.getElementById('roleFilter').addEventListener('change', loadUsers);
+
+        // Load users function
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(users => {
+                    const userTableBody = document.querySelector('#userTable tbody');
+                    userTableBody.innerHTML = '';
+
+                    users.forEach(user => {
+                        let roleColor = user.role === "CLIENT" ? "#3498db" : user.role === "ADMIN" ? "#e67e22" : "#95a5a6";
+                        let initials = user.username ? user.username.charAt(0).toUpperCase() : '?';
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; background-color: #ddd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1rem; color: #555;">
+                                    ${initials}
+                                </div>
+                                ${user.username}
+                            </td>
+                            <td>${user.email || 'N/A'}</td>
+                            <td>
+                                <span class="role-pill" style="background-color: ${roleColor};">
+                                    ${user.role}
+                                </span>
+                            </td>
+                            <td>${user.class_group || 'N/A'}</td>
+                            <td>
+                                <button onclick="deleteUser(${user.id})" class="delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        userTableBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Delete user function
+        function deleteUser(userId) {
+            fetch(`/api/users/${userId}`, { method: 'DELETE' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete user');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    loadUsers();
+                })
+                .catch(() => alert('Failed to delete user'));
+        }
+
+        // Initial load
+        loadUsers();
+    </script>
+</body>
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/create_form.css') }}"> <!-- Link to local client_css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}"> <!-- Link to local client_css -->
+  <script src="{{ url_for('static', filename='js/question_type.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/fetchgroups.js') }}"></script>
+
+  <style>
+
+#keywords-section textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+#keywords-section small {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 4px;
+  display: block;
+}
+  </style>
+
+</head>
+<body>
+
+  {% include 'admin_navbar.html' %}
+
+  <div class="container">
+    <div class="card">
+      <h1>Create Form</h1>
+
+
+      <div class="form-group">
+        <label for="form-type">Form Type</label>
+        <div class="form-type-selector">
+          <div class="form-type-option" data-value="NOTIFICATION">
+            <i class="fas fa-bell"></i>
+            <span>Notification</span>
+          </div>
+          <div class="form-type-option" data-value="QUESTION_BANK">
+            <i class="fas fa-book"></i>
+            <span>Question Bank</span>
+          </div>
+          <div class="form-type-option" data-value="SURVEY">
+            <i class="fas fa-poll"></i>
+            <span>Form</span>
+          </div>
+        </div>
+        <input type="hidden" id="form-type" value="NOTIFICATION">
+      </div>
+
+
+
+      
+      <div class="form-group">
+        <label for="form-title">Form Title</label>
+        <input type="text" id="form-title" placeholder="Enter a title for your form">
+      </div>
+    
+      
+    
+      <div class="form-group">
+        <label for="form-description">Form Description</label>
+        <textarea id="form-description" placeholder="Describe your form"></textarea>
+      </div>
+
+
+        <!-- Question Modal -->
+<div class="modal" id="question-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add Field</h2>
+    </div>
+
+    <div class="form-group">
+      <label for="question-text">Question Text</label>
+      <input type="text" id="question-text" placeholder="Enter your question">
+    </div>
+
+    <div class="form-group">
+      <label>Question Type</label>
+      <div id="question-type-container" class="question-type-options">
+        <button class="question-type-btn" data-type="SINGLE_WORD"><i class="fas fa-font"></i> Single Word</button>
+        <button class="question-type-btn" data-type="MULTI_WORD"><i class="fas fa-align-left"></i> Descriptive</button>
+        <button class="question-type-btn" data-type="TRUE_FALSE"><i class="fas fa-check-circle"></i> True/False</button>
+        <button class="question-type-btn" data-type="ATTACHMENT"><i class="fas fa-paperclip"></i> Attachment</button>
+        <button class="question-type-btn" data-type="LINK"><i class="fas fa-link"></i> Link</button>
+        <button class="question-type-btn" data-type="NUMBER"><i class="fas fa-hashtag"></i> Number</button>
+        <button class="question-type-btn" data-type="DATE"><i class="fas fa-calendar-alt"></i> Date</button>
+        <!-- <button class="question-type-btn" data-type="MULTIPLE_CHOICE"><i class="fas fa-list"></i> Multiple Choice</button> -->
+        <!-- <button class="question-type-btn" data-type="CHECKBOX"><i class="fas fa-check-square"></i> Checkbox</button> -->
+      </div>
+    </div>
+
+    <!-- Hidden Input to Store Selected Type -->
+    <input type="hidden" id="question-type" value="SINGLE_WORD">
+
+    <!-- Choices Section, Hidden by Default -->
+    <div id="choices-section" style="display: none;margin-bottom: 1.5rem;">
+      <label for="choices">Choices</label>
+      <div id="choices-container">
+        <div class="choice">
+          <input type="text" class="choice-input" placeholder="Enter choice">
+        </div>
+      </div>
+      <button type="button" id="add-choice-btn" onclick="addChoice()">Add Choice</button>
+    </div>
+
+    <div class="form-group">
+      <label for="correct-answer">Expected Answer</label>
+      <input type="text" id="correct-answer" placeholder="Enter the correct answer">
+    </div>
+
+<div class="form-group" id="keywords-section" style="display: none;">
+  <label for="keywords">Keywords (comma-separated)</label>
+  <textarea 
+    id="keywords" 
+    placeholder="Enter keywords separated by commas"
+    rows="3"
+  ></textarea>
+  <small>Enter keywords that should be present in the answer</small>
+</div>
+
+    <div class="form-group">
+      <label for="points">Points</label>
+      <input type="number" id="points" value="1" min="1">
+    </div>
+
+    <!-- Toggle for adding image -->
+    <div class="form-group">
+      <label for="add-image">Show Image?</label>
+      <input type="checkbox" id="add-image" onclick="toggleImageUpload()">
+    </div>
+
+    <!-- Image upload section, initially hidden -->
+    <div class="form-group" id="image-upload-section" style="display: none;">
+      <label for="image-upload">Upload Image</label>
+      <input type="file" id="image-upload" accept="image/*">
+    </div>
+
+    <script>
+      function toggleImageUpload() {
+        const imageUploadSection = document.getElementById('image-upload-section');
+        const addImageCheckbox = document.getElementById('add-image');
+        
+        // Toggle visibility of the image upload section based on the checkbox state
+        if (addImageCheckbox.checked) {
+          imageUploadSection.style.display = 'block';
+        } else {
+          imageUploadSection.style.display = 'none';
+        }
+      }
+
+      // Show Choices Section when "Multiple Choice" is selected
+    // Show Choices Section when "Multiple Choice" is selected
+document.querySelectorAll('.question-type-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    // Remove active class from all buttons
+    document.querySelectorAll('.question-type-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked button
+    button.classList.add('active');
+    
+    const selectedType = button.getAttribute('data-type');
+    document.getElementById('question-type').value = selectedType;
+    
+    // Get form type
+    const formType = document.getElementById('form-type').value;
+    
+    // Show or hide sections based on question type and form type
+    if (selectedType === 'MULTIPLE_CHOICE') {
+      document.getElementById('choices-section').style.display = 'block';
+      document.getElementById('keywords-section').style.display = 'none';
+    } else {
+      document.getElementById('choices-section').style.display = 'none';
+      
+      // Only show keywords section for MULTI_WORD type in non-SURVEY forms
+      if (selectedType === 'MULTI_WORD' && formType !== 'SURVEY') {
+        document.getElementById('keywords-section').style.display = 'block';
+      } else {
+        document.getElementById('keywords-section').style.display = 'none';
+      }
+    }
+  });
+});
+
+      // Add a new choice input (limit to 4 choices)
+      let choiceCount = 1; // Starting with 1 existing choice input field
+
+      function addChoice() {
+        if (choiceCount < 4) {
+          const container = document.getElementById('choices-container');
+          const newChoice = document.createElement('div');
+          newChoice.classList.add('choice');
+          newChoice.innerHTML = `<input type="text" class="choice-input" placeholder="Enter choice">`;
+          container.appendChild(newChoice);
+          choiceCount++;
+          
+          // Disable the Add Choice button if 4 choices are added
+          if (choiceCount >= 4) {
+            document.getElementById('add-choice-btn').disabled = true;
+          }
+        }
+      }
+
+      // Ensure Add Choice button is enabled/disabled correctly when choices are removed
+      function removeChoice(element) {
+        const container = document.getElementById('choices-container');
+        container.removeChild(element);
+        choiceCount--;
+        document.getElementById('add-choice-btn').disabled = false;
+      }
+    </script>
+
+    <div class="modal-footer">
+      <button class="button button-primary" onclick="addQuestion()">Add Field</button>
+      <button class="button" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+      <div class="form-group">
+        <label for="target-class-group">Target Group</label>
+        <select id="target-class-group">
+            <option value="">Select a Group</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+      <label for="form-scheduled">Scheduled</label>
+      <input type="checkbox" id="form-scheduled" onclick="toggleScheduleTime()">
+    </div>
+    
+    <!-- Time picker for scheduling, initially hidden -->
+    <div class="form-group" id="schedule-time-section" style="display: none;">
+      <label for="schedule-time">Schedule Time</label>
+      <input type="datetime-local" id="schedule-time">
+      <small>Set a date and time to schedule this form</small>
+    </div>
+    
+    <script>
+      function toggleScheduleTime() {
+        const scheduleSection = document.getElementById('schedule-time-section');
+        const scheduledCheckbox = document.getElementById('form-scheduled');
+    
+        // Toggle visibility of schedule time section based on the checkbox state
+        if (scheduledCheckbox.checked) {
+          scheduleSection.style.display = 'block';
+        } else {
+          scheduleSection.style.display = 'none';
+        }
+      }
+    </script>
+
+<div class="form-group">
+  <label for="form-deadline">Set Deadline</label>
+  <input type="checkbox" id="form-deadline-checkbox" onclick="toggleDeadline()">
+</div>
+
+<!-- Deadline picker, initially hidden -->
+<div class="form-group" id="deadline-section" style="display: none;">
+  <label for="deadline-time">Deadline</label>
+  <input type="datetime-local" id="deadline-time">
+  <small>Set a date and time when this form will no longer be available</small>
+</div>
+
+<script>
+  function toggleDeadline() {
+    const deadlineSection = document.getElementById('deadline-section');
+    const deadlineCheckbox = document.getElementById('form-deadline-checkbox');
+
+    // Toggle visibility of deadline section based on the checkbox state
+    if (deadlineCheckbox.checked) {
+      deadlineSection.style.display = 'block';
+    } else {
+      deadlineSection.style.display = 'none';
+    }
+  }
+</script>
+    
+    
+    
+    
+      
+    
+      <!-- Move the timer section here -->
+      <div class="form-group" id="timer-section" style="display: none;">
+        <label for="form-timer">Time Limit (minutes)</label>
+        <input 
+          type="number" 
+          id="form-timer" 
+          min="1" 
+          max="180" 
+          value="2" 
+          placeholder="Enter time limit in minutes"
+        >
+        <small style="color: var(--text-secondary);">Set a time limit for this question bank (1-180 minutes)</small>
+      </div>
+
+
+    </div>
+
+
+    <div class="card questionscard">
+      <div class="form-group">
+        <button class="button button-primary" onclick="openQuestionModal()">Add Field</button>
+      </div>
+
+      <div class="questions-list" id="questions-container">
+        <!-- Questions will be rendered here -->
+      </div>
+    </div>
+
+    <div class="form-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="button button-primary save-form-button" onclick="saveForm()">Save Form</button>
+      
+      <button class="button button-primary save-form-button" style="background-color: green;">
+        <i class="fas fa-file-excel"></i> Export As Excel Sheet
+      </button>
+      
+      <button class="button button-primary save-form-button" style="background-color: orange;">
+        <i class="fas fa-file-code"></i> Export As JSON
+      </button>
+    </div>
+    
+    
+    
+  </div>
+
+
+
+<style>
+
+</style>
+
+
+<!-- <script src="{{ url_for('static', filename='js/questionManager2.js') }}"></script> -->
+
+<script>
+     let questions = [];
+    let currentQuestion = null;
+
+    // Open question modal
+    function openQuestionModal() {
+      document.getElementById('question-modal').style.display = 'flex';
+    }
+
+    // Close question modal
+    function closeModal() {
+      document.getElementById('question-modal').style.display = 'none';
+      clearQuestionFields();
+    }
+
+    // Clear the input fields
+    function clearQuestionFields() {
+  document.getElementById('question-text').value = '';
+  document.getElementById('question-type').value = 'SINGLE_WORD';
+  document.getElementById('correct-answer').value = '';
+  document.getElementById('points').value = '1';
+  document.getElementById('keywords').value = '';
+  // Reset choices container
+  const choicesContainer = document.getElementById('choices-container');
+  choicesContainer.innerHTML = '<div class="choice"><input type="text" class="choice-input" placeholder="Enter choice"></div>';
+  choiceCount = 1;
+}
+
+    // Add a new question
+    // Update the addQuestion function
+    function addQuestion() {
+    const formType = document.getElementById('form-type').value;
+    const text = document.getElementById('question-text').value;
+    const type = document.getElementById('question-type').value;
+    let correctAnswer = document.getElementById('correct-answer').value;
+    let points = document.getElementById('points').value;
+    let keywordsText = document.getElementById('keywords').value;
+
+    // For SURVEY type, ensure default values
+    if (formType === 'SURVEY') {
+        correctAnswer = 'any';
+        points = '0';
+        keywordsText = 'any';
+    }
+
+    let choices = [];
+    if (type === 'MULTIPLE_CHOICE') {
+        const choiceInputs = document.querySelectorAll('.choice-input');
+        choices = Array.from(choiceInputs).map(input => input.value);
+    }
+
+    let keywords = [];
+    if (type === 'MULTI_WORD' && keywordsText) {
+        keywords = keywordsText.split(',').map(k => k.trim()).filter(k => k);
+    }
+
+    const question = {
+        text,
+        type,
+        correctAnswer,
+        points: parseInt(points) || 0,
+        choices,
+        keywords
+    };
+
+    questions.push(question);
+    renderQuestions();
+    closeModal();
+}
+
+
+    // Render questions in the UI
+    function renderQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+      questions.forEach((question, index) => {
+        const questionElement = document.createElement('div');
+        questionElement.classList.add('question-item');
+        questionElement.setAttribute('draggable', true);
+        questionElement.setAttribute('data-index', index);
+        questionElement.addEventListener('dragstart', handleDragStart);
+        questionElement.addEventListener('dragover', handleDragOver);
+        questionElement.addEventListener('drop', handleDrop);
+        
+        questionElement.innerHTML = `
+    <span class="question-title">${question.text}</span>
+    <div class="question-actions">
+        <button class="button" onclick="editQuestion(${index})">Edit</button>
+        <button class="button" onclick="deleteQuestion(${index})">Delete</button>
+    </div>
+`;
+
+
+        container.appendChild(questionElement);
+      });
+    }
+
+    // Edit a question
+    function editQuestion(index) {
+      const question = questions[index];
+      currentQuestion = index;
+      document.getElementById('question-text').value = question.text;
+      document.getElementById('question-type').value = question.type;
+      document.getElementById('correct-answer').value = question.correctAnswer;
+      document.getElementById('points').value = question.points;
+      openQuestionModal();
+    }
+
+    // Delete a question
+    function deleteQuestion(index) {
+      questions.splice(index, 1);
+      renderQuestions();
+    }
+
+    // Save the form
+    function saveForm() {
+    const formType = document.getElementById('form-type').value;
+    const targetClassGroup = document.getElementById('target-class-group').value;
+    
+    if (!targetClassGroup) {
+        alert('Please select a target class group');
+        return;
+    }
+
+    const formData = {
+        title: document.getElementById('form-title').value,
+        description: document.getElementById('form-description').value,
+        form_type: formType,
+        target_class_group: targetClassGroup,
+        questions: questions.map(q => ({
+            text: q.text,
+            type: q.type,
+            correct_answer: q.correctAnswer,
+            points: parseInt(q.points),
+            choices: q.choices || [],
+            keywords: q.keywords || []
+        }))
+    };
+
+    // Add scheduled time if the checkbox is checked
+    if (document.getElementById('form-scheduled').checked) {
+        const scheduleTime = document.getElementById('schedule-time').value;
+        if (!scheduleTime) {
+            alert('Please select a schedule time');
+            return;
+        }
+        formData.scheduled_at = scheduleTime;
+    }
+    
+    // Add deadline if the checkbox is checked
+    if (document.getElementById('form-deadline-checkbox').checked) {
+        const deadlineTime = document.getElementById('deadline-time').value;
+        if (!deadlineTime) {
+            alert('Please select a deadline');
+            return;
+        }
+        formData.deadline = deadlineTime;
+    }
+
+    // Add timer only for QUESTION_BANK type
+    if (formType === 'QUESTION_BANK') {
+        const timerValue = document.getElementById('form-timer').value;
+        
+        // Validate timer
+        if (!timerValue || timerValue < 1 || timerValue > 180) {
+            alert('Please set a valid time limit between 1 and 180 minutes');
+            return;
+        }
+        
+        formData.time_limit = parseInt(timerValue);
+    }
+
+    if (!formData.title) {
+        alert('Please enter a form title');
+        return;
+    }
+
+    if (formType === 'QUESTION_BANK' && formData.questions.length === 0) {
+        alert('Please add at least one question');
+        return;
+    }
+
+    console.log('Sending form data:', formData);
+
+    fetch('/api/forms/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Unknown error occurred');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert('Form created successfully!');
+        window.location.href = '/dashboard';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`Error creating form: ${error.message}`);
+    });
+}
+
+    // Drag and drop handling
+    let draggedItem = null;
+
+    function handleDragStart(event) {
+      draggedItem = event.target;
+      setTimeout(() => {
+        draggedItem.classList.add('dragging');
+      }, 0);
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      const currentItem = event.target;
+      if (currentItem.classList.contains('question-item') && draggedItem !== currentItem) {
+        currentItem.style.border = '1px solid #2980b9';
+      }
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      const target = event.target;
+      target.style.border = 'none';
+      if (target.classList.contains('question-item') && draggedItem !== target) {
+        const draggedIndex = draggedItem.getAttribute('data-index');
+        const targetIndex = target.getAttribute('data-index');
+
+        const draggedQuestion = questions[draggedIndex];
+        questions.splice(draggedIndex, 1);
+        questions.splice(targetIndex, 0, draggedQuestion);
+
+        renderQuestions();
+      }
+      draggedItem.classList.remove('dragging');
+    }
+
+    // Add event listener for form type changes
+    document.getElementById('form-type').addEventListener('change', function() {
+    const questionSection = document.querySelector('.card:nth-child(2)');
+    const timerSection = document.getElementById('timer-section');
+    
+    if (this.value === 'QUESTION_BANK') {
+        questionSection.style.display = 'block';
+        timerSection.style.display = 'block';
+    } else {
+        questionSection.style.display = 'none';
+        timerSection.style.display = 'none';
+    }
+});
+
+// Update the window load event listener
+window.addEventListener('load', function() {
+    const formType = document.getElementById('form-type').value;
+    const questionSection = document.querySelector('.card:nth-child(2)');
+    const timerSection = document.getElementById('timer-section');
+    
+    if (formType === 'QUESTION_BANK') {
+        questionSection.style.display = 'block';
+        timerSection.style.display = 'block';
+    } else {
+        questionSection.style.display = 'none';
+        timerSection.style.display = 'none';
+    }
+});
+
+document.getElementById("form-type").addEventListener("change", function () {
+    let timerSection = document.getElementById("timer-section");
+    if (this.value === "QUESTION_BANK") {
+        timerSection.style.display = "block"; // Show the timer section
+    } else {
+        timerSection.style.display = "none"; // Hide it for other types
+    }
+});
+
+// Trigger change event on page load to set the correct initial state
+document.getElementById("form-type").dispatchEvent(new Event("change"));
+
+
+
+
+</script>
+  
+
+  <script>
+    document.getElementById('form-type').addEventListener('change', function () {
+    let questionsCard = document.querySelector('.questions-list').closest('.card');
+    if (this.value === 'NOTIFICATION') {
+        questionsCard.style.display = 'none';
+    } else {
+        questionsCard.style.display = 'block';
+    }
+});
+
+// Trigger the change event on page load to apply the logic initially
+document.getElementById('form-type').dispatchEvent(new Event('change'));
+
+  </script>
+
+<script>
+  function updateFieldsBasedOnFormType() {
+    const formType = document.getElementById('form-type').value;
+    const correctAnswerGroup = document.querySelector('label[for="correct-answer"]').parentElement;
+    const keywordsSection = document.getElementById('keywords-section');
+    const pointsGroup = document.querySelector('label[for="points"]').parentElement;
+
+    if (formType === 'SURVEY') {
+        // Hide the fields
+        correctAnswerGroup.style.display = 'none';
+        keywordsSection.style.display = 'none';
+        pointsGroup.style.display = 'none';
+
+        // Set default values
+        document.getElementById('correct-answer').value = 'any';
+        document.getElementById('keywords').value = 'any';
+        document.getElementById('points').value = '0';
+    } else {
+        // Show the fields for other form types
+        correctAnswerGroup.style.display = 'block';
+        // Only show keywords for MULTI_WORD type
+        if (document.getElementById('question-type').value === 'MULTI_WORD') {
+            keywordsSection.style.display = 'block';
+        }
+        pointsGroup.style.display = 'block';
+    }
+}
+
+// Add listeners
+document.getElementById('form-type').addEventListener('change', updateFieldsBasedOnFormType);
+document.addEventListener('DOMContentLoaded', updateFieldsBasedOnFormType);
+</script>
+<script>
+  // Form type selector functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const formTypeOptions = document.querySelectorAll('.form-type-option');
+    const formTypeInput = document.getElementById('form-type');
+
+    // Set initial active state
+    const initialOption = document.querySelector(`[data-value="${formTypeInput.value}"]`);
+    if (initialOption) {
+        initialOption.classList.add('active');
+    }
+
+    formTypeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove active class from all options
+            formTypeOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Add active class to clicked option
+            this.classList.add('active');
+            
+            // Update hidden input value
+            formTypeInput.value = this.dataset.value;
+            
+            // Trigger change event on the hidden input
+            const event = new Event('change');
+            formTypeInput.dispatchEvent(event);
+        });
+    });
+});
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const formTypeInput = document.getElementById('form-type');
+      
+      function updateUIText() {
+          const isSurveyType = formTypeInput.value === 'SURVEY';
+          
+          // Update button text
+          const addButton = document.querySelector('.button-primary[onclick="openQuestionModal()"]');
+          if (addButton) {
+              addButton.textContent = isSurveyType ? 'Add Field' : 'Add Field';
+          }
+          
+          // Update modal title
+          const modalTitle = document.querySelector('#question-modal .modal-header h2');
+          if (modalTitle) {
+              modalTitle.textContent = isSurveyType ? 'Add Field' : 'Add Field';
+          }
+          
+          // Update field/question type label
+          const typeLabel = document.querySelector('#question-modal label[for="question-type"]');
+          if (typeLabel) {
+              typeLabel.textContent = isSurveyType ? 'Field Type' : 'Question Type';
+          }
+          
+          // Update question text label
+          const textLabel = document.querySelector('label[for="question-text"]');
+          if (textLabel) {
+              textLabel.textContent = isSurveyType ? 'Field Name' : 'Question Text';
+          }
+      }
+      
+      // Listen for form type changes
+      formTypeInput.addEventListener('change', updateUIText);
+      
+      // Initial update
+      updateUIText();
+  });
+</script>
+
+</body>
+</html>

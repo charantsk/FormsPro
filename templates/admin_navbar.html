@@ -1,0 +1,79 @@
+
+
+<div class="navbar">
+    <div class="logo">
+        <span>FormsPro {{ user_name }}</span>
+    </div>
+
+    <div class="navbar-links">
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-plus"></i> Create Form
+        </a>
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-poll"></i> Survey
+        </a>
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-bell"></i> Notification
+        </a>
+
+        <a href="{{ url_for('view.dashboard') }}" class="nav-item">
+            <i class="fas fa-th-large"></i> Dashboard
+        </a>
+
+        <!-- <a href="{{ url_for('view.admin_courses') }}" class="nav-item">
+            <i class="fas fa-graduation-cap"></i> Courses
+        </a> -->
+        
+
+        <a href="{{ url_for('view.create_user_page') }}" class="nav-item">
+            <i class="fas fa-users"></i> Manage Profiles
+        </a>
+        
+        <a href="{{ url_for('view.admin_profile') }}" class="nav-item">
+            <i class="fas fa-id-badge"></i> Profile
+        </a>
+        
+        
+        <div class="logout-btn" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
+    </div>
+    
+
+    <div class="hamburger" id="hamburger-icon">
+        <i class="fas fa-bars"></i>
+    </div>
+</div>
+
+<script>
+    // Hamburger Menu
+    const hamburger = document.getElementById('hamburger-icon');
+    const navbarLinks = document.querySelector('.navbar-links');
+
+    hamburger.addEventListener('click', () => {
+        navbarLinks.classList.toggle('active');
+    });
+
+    // Logout Button functionality
+    const logoutButton = document.getElementById('logout-btn');
+
+    logoutButton.addEventListener('click', () => {
+        fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'Logged out successfully') {
+                // Redirect to index page after successful logout
+                window.location.href = '/';
+            }
+        })
+        .catch(error => {
+            console.error('Error logging out:', error);
+        });
+    });
+</script>

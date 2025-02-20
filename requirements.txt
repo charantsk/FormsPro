@@ -1,0 +1,61 @@
+annotated-types @ file:///home/conda/feedstock_root/build_artifacts/annotated-types_1733247046149/work
+blinker==1.9.0
+blis @ file:///D:/bld/cython-blis_1729663826827/work
+Brotli @ file:///D:/bld/brotli-split_1725267609074/work
+catalogue @ file:///D:/bld/catalogue_1736092430253/work
+certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1739515848642/work/certifi
+cffi @ file:///D:/bld/cffi_1725560706917/work
+charset-normalizer @ file:///home/conda/feedstock_root/build_artifacts/charset-normalizer_1735929714516/work
+click @ file:///D:/bld/click_1734858834134/work
+cloudpathlib @ file:///home/conda/feedstock_root/build_artifacts/cloudpathlib-meta_1729359055183/work
+colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1733218098505/work
+confection @ file:///D:/bld/confection_1701179257718/work
+cymem @ file:///D:/bld/cymem_1737125896169/work
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
+Flask==3.1.0
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+greenlet==3.1.1
+h2 @ file:///home/conda/feedstock_root/build_artifacts/h2_1738578511449/work
+hpack @ file:///home/conda/feedstock_root/build_artifacts/hpack_1737618293087/work
+hyperframe @ file:///home/conda/feedstock_root/build_artifacts/hyperframe_1737618333194/work
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1733211830134/work
+itsdangerous==2.2.0
+Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1734823942230/work
+langcodes @ file:///home/conda/feedstock_root/build_artifacts/langcodes_1734376437639/work
+language_data @ file:///home/conda/feedstock_root/build_artifacts/language-data_1732032415021/work
+marisa-trie @ file:///D:/bld/marisa-trie_1736179007299/work
+markdown-it-py @ file:///home/conda/feedstock_root/build_artifacts/markdown-it-py_1733250460757/work
+MarkupSafe @ file:///D:/bld/markupsafe_1733219614059/work
+mdurl @ file:///home/conda/feedstock_root/build_artifacts/mdurl_1733255585584/work
+murmurhash @ file:///D:/bld/murmurhash_1728933022744/work
+numpy @ file:///D:/bld/numpy_1739425617249/work/dist/numpy-2.2.3-cp311-cp311-win_amd64.whl#sha256=16d8179eb346ade4b011e196728dfd85a6ee21445113538d9be6c1363856be27
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1733203243479/work
+preshed @ file:///D:/bld/preshed_1728945758155/work
+pycparser @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pycparser_1733195786/work
+pydantic @ file:///home/conda/feedstock_root/build_artifacts/pydantic_1737761369378/work
+pydantic_core @ file:///D:/bld/pydantic-core_1734571360609/work
+Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1736243443484/work
+PySocks @ file:///D:/bld/pysocks_1733217287171/work
+python-dotenv==1.0.1
+requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1733217035951/work
+rich @ file:///home/conda/feedstock_root/build_artifacts/rich_1733342254348/work/dist
+shellingham @ file:///home/conda/feedstock_root/build_artifacts/shellingham_1733300899265/work
+smart_open @ file:///home/conda/feedstock_root/build_artifacts/smart_open_1734485076778/work/dist
+spacy @ file:///D:/bld/spacy_1732449856175/work
+spacy-legacy @ file:///home/conda/feedstock_root/build_artifacts/spacy-legacy_1674550301837/work
+spacy-loggers @ file:///home/conda/feedstock_root/build_artifacts/spacy-loggers_1694527114282/work
+SQLAlchemy==2.0.38
+srsly @ file:///D:/bld/srsly_1737143197945/work
+thinc @ file:///D:/bld/thinc_1733202750851/work
+tqdm @ file:///home/conda/feedstock_root/build_artifacts/tqdm_1735661334605/work
+typer==0.15.1
+typer-slim==0.15.1
+typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1733188668063/work
+urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1734859416348/work
+wasabi @ file:///D:/bld/wasabi_1715409739319/work
+weasel @ file:///home/conda/feedstock_root/build_artifacts/weasel_1734270156651/work
+Werkzeug==3.1.3
+win_inet_pton @ file:///D:/bld/win_inet_pton_1733130564612/work
+wrapt @ file:///D:/bld/wrapt_1736869488076/work
+zstandard==0.23.0

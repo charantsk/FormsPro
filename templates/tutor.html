@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Tutor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}"> <!-- Link to local client_css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}"> <!-- Link to local client_css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tutor.css') }}"> <!-- Link to local client_css -->
+    
+</head>
+<body>
+
+    {% include 'client_navbar.html' %}
+    <div class="chat-container">
+        <div class="chat-header" style="display: flex; align-items: center;">
+            <h1 style="margin-bottom:0px;">Tutor</h1>
+            <i class="fas fa-info-circle" style="margin-left: 8px; cursor: pointer;" 
+               onclick="toggleInfo()"></i>
+            <span id="info-text" style="display: none; margin-left: 8px; font-size: 14px; color: gray;">
+                This AI tutor assists clients by explaining concepts, generating sample questions, 
+                creating practice tests, and providing study guidance. Use it to enhance your learning experience.
+            </span>
+        </div>
+        
+        <script>
+        function toggleInfo() {
+            var infoText = document.getElementById("info-text");
+            infoText.style.display = infoText.style.display === "none" ? "inline" : "none";
+        }
+        </script>
+        
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be inserted here -->
+        </div>
+        <div class="chat-input">
+            <div class="input-container">
+                <div class="input-box">
+                    <textarea 
+                        placeholder="Type your message..." 
+                        id="message-input"
+                        rows="1"
+                        onInput="autoResize(this)"
+                    ></textarea>
+                    <div class="input-actions">
+                        <input type="file" id="file-input" class="file-input" multiple>
+                        <button class="attach-btn" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-paperclip"></i>
+                            Attach
+                        </button>
+                    </div>
+                </div>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Handle file selection
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        addAttachmentPreview(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Add attachment preview
+        function addAttachmentPreview(dataUrl) {
+            const messageInput = document.getElementById('message-input');
+            const preview = document.createElement('img');
+            preview.src = dataUrl;
+            preview.classList.add('message-image');
+            messageInput.parentElement.appendChild(preview);
+        }
+
+        // Send message
+        async function sendMessage() {
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value.trim();
+    const attachments = Array.from(messageInput.parentElement.querySelectorAll('.message-image')).map(img => img.src);
+    
+    if (message || attachments.length > 0) {
+        // Add user message to chat
+        addMessage(message, attachments, true);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        
+        // Remove attachment previews
+        messageInput.parentElement.querySelectorAll('.message-image').forEach(img => img.remove());
+        
+        // Show typing indicator while waiting for response
+        showTypingIndicator();
+        
+        try {
+            // Send request to tutor endpoint
+            const response = await fetch('/api/tutor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            });
+            
+            const data = await response.json();
+            
+            // Remove typing indicator
+            removeTypingIndicator();
+            
+            if (data.error) {
+                addMessage("Sorry, I encountered an error: " + data.error, [], false);
+            } else {
+                addMessage(data.response, [], false);
+            }
+            
+        } catch (error) {
+            removeTypingIndicator();
+            addMessage("Sorry, I encountered an error while processing your request.", [], false);
+            console.error('Error:', error);
+        }
+    }
+}   
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.classList.add('typing-indicator');
+            typingIndicator.innerHTML = `
+                <div class="message-avatar">T</div>
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('chat-messages').appendChild(typingIndicator);
+            scrollToBottom();
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.querySelector('.typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, attachments = [], isUser = false) {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', isUser ? 'user' : 'tutor');
+
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('message-content');
+
+    // Convert newlines to <br>
+    const formattedText = text.replace(/\n/g, '<br>');
+    contentDiv.innerHTML = `<p class="message-text">${formattedText}</p>`;
+
+    // Append attachments if any
+    attachments.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.classList.add('message-image');
+        contentDiv.appendChild(img);
+    });
+
+    messageDiv.appendChild(contentDiv);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Handle Enter key
+        document.getElementById('message-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Add initial message
+        addMessage("Hello! How can I assist you today?", [], false);
+    </script>
+</body>
+</html>

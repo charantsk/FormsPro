@@ -1,0 +1,93 @@
+ /* General Styles */
+ .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: white;
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+.navbar .logo a {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-links .nav-item {
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-links .nav-item i {
+    margin-right: 8px;
+}
+
+/* Hamburger Menu for Mobile */
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+.hamburger i {
+    font-size: 24px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background-color: #5146e5bb;
+        backdrop-filter: blur(20px);
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .navbar-links.active {
+        display: flex;
+    }
+
+    .hamburger {
+        display: block;
+    }
+}
+
+/* Animation for the navbar items when visible */
+.navbar-links a {
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Logout Button */
+.logout-btn {
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: transparent;
+    color: white;
+}
+
+.logout-btn i {
+    margin-right: 8px;
+}

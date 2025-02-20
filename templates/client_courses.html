@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> - Courses</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}"> <!-- Link to local client_css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}"> <!-- Link to local client_css -->
+
+    <style>
+        :root {
+            --primary-color: #3bbf91;
+            --primary-dark: #2a8f6d;
+            --text-color: #333;
+            --bg-gray: #f5f5f5;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family:  system-ui, -apple-system, sans-serif;
+            font-weight: 600;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-color);
+        }
+
+        .dashboard-container {
+            max-width: 100%;
+            padding:20px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+        }
+        
+        .section{
+            background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+        }
+
+        .recently-viewed {
+            margin-bottom: 3rem;
+        }
+
+        .recent-courses {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .recent-course-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            min-width: 250px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .recent-course-title {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .last-viewed {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .course-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .course-progress {
+            margin-top: 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .course-content {
+            padding: 1.5rem;
+        }
+
+        .module-list {
+            list-style: none;
+        }
+
+        .module-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .module-item:last-child {
+            border-bottom: none;
+        }
+
+        .module-icon {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            border-radius: 10px;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .file-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+        }
+
+        .file-info {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .download-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'client_navbar.html' %}
+
+
+    <div class="section">
+        <div class="dashboard-container">
+            <section class="recently-viewed">
+                <h2 class="section-title">Recently Viewed</h2>
+                <div class="recent-courses" id="recentCourses"></div>
+            </section>
+    
+            <section class="all-courses">
+                <h2 class="section-title">All Courses</h2>
+                <div class="courses-grid" id="coursesGrid"></div>
+            </section>
+        </div>
+
+    </div>
+
+    
+
+    <div class="modal" id="courseModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Dummy API data
+        const coursesData = [
+            {
+                id: 1,
+                title: "Web Development Fundamentals",
+                progress: 75,
+                lastViewed: "2 hours ago",
+                modules: [
+                    {
+                        title: "HTML Basics",
+                        files: [
+                            { name: "Introduction.pdf", type: "pdf", size: "2.4 MB" },
+                            { name: "Exercise-1.zip", type: "zip", size: "1.1 MB" }
+                        ]
+                    },
+                    {
+                        title: "CSS Styling",
+                        files: [
+                            { name: "Styles-Guide.pdf", type: "pdf", size: "3.2 MB" },
+                            { name: "Project.zip", type: "zip", size: "4.5 MB" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "JavaScript Master Class",
+                progress: 45,
+                lastViewed: "1 day ago",
+                modules: [
+                    {
+                        title: "Variables & Data Types",
+                        files: [
+                            { name: "Variables.pdf", type: "pdf", size: "1.8 MB" },
+                            { name: "Practice.js", type: "js", size: "0.5 MB" }
+                        ]
+                    },
+                    {
+                        title: "Functions & Objects",
+                        files: [
+                            { name: "Functions.pdf", type: "pdf", size: "2.1 MB" },
+                            { name: "Examples.js", type: "js", size: "0.7 MB" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "React Framework",
+                progress: 30,
+                lastViewed: "3 days ago",
+                modules: [
+                    {
+                        title: "Components",
+                        files: [
+                            { name: "Components.pdf", type: "pdf", size: "2.8 MB" },
+                            { name: "Demo.jsx", type: "jsx", size: "0.3 MB" }
+                        ]
+                    },
+                    {
+                        title: "State Management",
+                        files: [
+                            { name: "State.pdf", type: "pdf", size: "1.9 MB" },
+                            { name: "Example.jsx", type: "jsx", size: "0.4 MB" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Render recently viewed courses
+        function renderRecentCourses() {
+            const recentCourses = document.getElementById('recentCourses');
+            recentCourses.innerHTML = coursesData
+                .sort((a, b) => a.lastViewed.localeCompare(b.lastViewed))
+                .slice(0, 3)
+                .map(course => `
+                    <div class="recent-course-card" onclick="showCourseDetails(${course.id})">
+                        <h3 class="recent-course-title">${course.title}</h3>
+                        <div class="last-viewed">${course.lastViewed}</div>
+                    </div>
+                `).join('');
+        }
+
+        // Render all courses
+        function renderCourses() {
+            const coursesGrid = document.getElementById('coursesGrid');
+            coursesGrid.innerHTML = coursesData.map(course => `
+                <div class="course-card" onclick="showCourseDetails(${course.id})">
+                    <div class="course-header">
+                        <h2 style="color:white;">${course.title}</h2>
+                        <div class="course-progress">
+                            <div class="progress-bar" style="width: ${course.progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="course-content">
+                        <ul class="module-list">
+                            ${course.modules.map(module => `
+                                <li class="module-item">
+                                    <div class="module-icon">M</div>
+                                    <div>${module.title}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show course details in modal
+        function showCourseDetails(courseId) {
+            const course = coursesData.find(c => c.id === courseId);
+            const modal = document.getElementById('courseModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.innerHTML = `
+                <h2>${course.title}</h2>
+                <div style="margin: 1rem 0;">Progress: ${course.progress}%</div>
+                ${course.modules.map(module => `
+                    <div style="margin: 2rem 0;">
+                        <h3>${module.title}</h3>
+                        <ul class="file-list">
+                            ${module.files.map(file => `
+                                <li class="file-item">
+                                    <div class="file-info">
+                                        <i class="fas fa-file"></i>
+                                        <span>${file.name}</span>
+                                        <span style="color: #666; font-size: 0.9rem;">${file.size}</span>
+                                    </div>
+                                    <button class="download-btn" onclick="downloadFile('${file.name}')">
+                                        <i class="fas fa-download"></i>
+                                        Download
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+            `;
+
+            modal.style.display = 'block';
+        }
+
+        // Download file function (dummy)
+        function downloadFile(filename) {
+            alert(`Downloading ${filename}...`);
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('courseModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('courseModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Initial render
+        renderRecentCourses();
+        renderCourses();
+    </script>
+</body>
+</html>

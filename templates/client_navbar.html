@@ -1,0 +1,182 @@
+<!-- Navbar -->
+<style>
+    /* General Styles */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        color: white;
+    }
+
+    .navbar a {
+        text-decoration: none;
+        color: white;
+        margin-left: 20px;
+        font-size: 16px;
+    }
+
+    .navbar .logo a {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .navbar-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-links .nav-item {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-links .nav-item i {
+        margin-right: 8px;
+    }
+
+    /* Hamburger Menu for Mobile */
+    .hamburger {
+        display: none;
+        cursor: pointer;
+    }
+
+    .hamburger i {
+        font-size: 24px;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .navbar-links {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #5146e5bb;
+            backdrop-filter: blur(20px);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .navbar-links.active {
+            display: flex;
+        }
+
+        .hamburger {
+            display: block;
+        }
+    }
+
+    /* Animation for the navbar items when visible */
+    .navbar-links a {
+        padding: 10px;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    /* Logout Button */
+    .logout-btn {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid white;
+        border-radius: 5px;
+        background-color: transparent;
+        color: white;
+    }
+
+    .logout-btn i {
+        margin-right: 8px;
+    }
+</style>
+
+<div class="navbar">
+    <div class="logo">
+        <span>Forms</span>
+    </div>
+
+    <div class="navbar-links">
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-book"></i> My Courses
+        </a>
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-calendar-alt"></i> Calendar
+        </a>
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-bell"></i> Notifications
+        </a>
+        <a href="#" class="nav-item" style="display: none;">
+            <i class="fas fa-file-alt"></i> Assignments
+        </a>
+
+        <a href="{{ url_for('view.dashboard') }}" class="nav-item">
+            <i class="fas fa-home"></i> Home
+        </a>
+
+
+        <a href="{{ url_for('view.client_courses') }}" class="nav-item">
+            <i class="fas fa-graduation-cap"></i> Courses
+        </a>
+
+        <a  href="{{ url_for('view.client_research') }}" class="nav-item">
+            <i class="fas fa-book"></i> Research
+        </a>
+        
+        
+        <a href="{{ url_for('view.tutor') }}" class="nav-item">
+            <i class="fas fa-robot"></i> Tutor
+        </a>
+        
+
+        <a href="{{ url_for('view.client_profile') }}" class="nav-item">
+            <i class="fas fa-user"></i> Profile
+        </a>
+        
+        
+        <div class="logout-btn" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
+    </div>
+    
+
+    <div class="hamburger" id="hamburger-icon">
+        <i class="fas fa-bars"></i>
+    </div>
+</div>
+
+<script>
+    // Hamburger Menu
+    const hamburger = document.getElementById('hamburger-icon');
+    const navbarLinks = document.querySelector('.navbar-links');
+
+    hamburger.addEventListener('click', () => {
+        navbarLinks.classList.toggle('active');
+    });
+
+    // Logout Button functionality
+    const logoutButton = document.getElementById('logout-btn');
+
+    logoutButton.addEventListener('click', () => {
+        fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'Logged out successfully') {
+                // Redirect to index page after successful logout
+                window.location.href = '/';
+            }
+        })
+        .catch(error => {
+            console.error('Error logging out:', error);
+        });
+    });
+</script>
